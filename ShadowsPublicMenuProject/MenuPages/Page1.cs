@@ -15,6 +15,14 @@ namespace ShadowsPublicMenu.MenuPages
         {
             float y = 50f;
 
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), "Join Discord"))
+            {
+                Application.OpenURL("https://discord.com/invite/2FzsKdvjMU");
+            }
+
+            y += 30f;
+
+
             if (GUI.Button(new Rect(20f, y, 160f, 30f), "Join Random (3D)"))
             {
                 Object.FindObjectOfType<QuickMatchMenu>(true).gameObject.SetActive(true);

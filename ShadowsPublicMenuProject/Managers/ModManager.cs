@@ -46,6 +46,7 @@ namespace ShadowsPublicMenu.Managers
             catch (Exception e)
             {
                 MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at ModManager.Update(), error: {e}");
+                Settings.ErrorCount += 1;
             }
         }
 

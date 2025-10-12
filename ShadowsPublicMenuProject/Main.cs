@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
 using Il2CppInternal.Cryptography;
 using Il2CppSG.Airlock;
 using Il2CppSG.Airlock.UI.TitleScreen;
@@ -12,7 +15,7 @@ using UnityEngine.InputSystem;
 using static ShadowsPublicMenu.Config.GameReferences;
 using static ShadowsPublicMenu.Config.Settings;
 
-[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", "2.4.0", "Shadoww.py")]
+[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", "2.5.2", "Shadoww.py")]
 
 [assembly: MelonGame("Schell Games", "Among Us 3D")]
 [assembly: MelonGame("Schell Games", "Among Us 3D: VR")]
@@ -37,10 +40,32 @@ namespace ShadowsPublicMenu
         [System.Obsolete]
         public override void OnApplicationStart()
         {
+            MelonLogger.Msg($"Initializing Menu...");
+
             IsVR = Application.productName.Contains("VR");
 
 
-            MelonLogger.Log($"Thank you for using Shadows Menu! Click Left Ctrl key to toggle the menu!");
+
+
+
+            string purple = "\u001b[35m";
+            string reset = "\u001b[0m";
+
+            MelonLogger.Msg($@"
+{purple}+----------------------------------------------------------------------+
+|                                                                      |
+|                         SHADOW'S MENU                                |
+|                    Developed by Shadoww.py                           |
+|                                                                      |
+| Thank you for using Shadows Menu! Click Left Ctrl key to toggle it!  |
+|                                                                      |
+| Join my Discord for early access to updates and to make suggestions! |
+| https://discord.com/invite/2FzsKdvjMU                                |
+|                                                                      |
++----------------------------------------------------------------------+{reset}
+");
+
+
         }
 
 
@@ -58,7 +83,9 @@ namespace ShadowsPublicMenu
             }
             else
             {
-                HideBlindTriggers();
+                GameObject.Find("BlindboxHeadTrigger")?.SetActive(false);
+                GameObject.Find("SightboxHeadTrigger")?.SetActive(false);
+                MelonCoroutines.Start(WaitSendTelemetry());
             }
         }
 
@@ -123,6 +150,8 @@ namespace ShadowsPublicMenu
             catch (System.Exception e)
             {
                 MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at Main.OnGUI(), error: {e}");
+                Settings.ErrorCount += 1;
+
             }
 
             if (!CodeRecievced && InGame)
@@ -143,6 +172,38 @@ namespace ShadowsPublicMenu
                 frames = 0;
                 nextFpsUpdateTime = time + 1f;
             }
+        }
+
+        // Sends telemetry for debugging / analytics
+        private static async Task SubmitTelemetry()
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Telemetry-ID", $"{GameReferences.Rig.PState.PlayerModerationID.Value}");
+                client.DefaultRequestHeaders.Add("Telemetry-Errors", $"{Settings.ErrorCount}");
+
+                try
+                {
+                    HttpResponseMessage response = await client.GetAsync("https://shadowsmenu.jolyne108.workers.dev/");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string result = await response.Content.ReadAsStringAsync();
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at Main.SubmitTelemetry(), error: {ex}");
+                    Settings.ErrorCount += 1;
+                }
+            }
+        }
+
+
+        public static IEnumerator WaitSendTelemetry()
+        {
+            yield return new WaitForSeconds(4f);
+            _ = SubmitTelemetry();
         }
 
 
@@ -259,11 +320,7 @@ namespace ShadowsPublicMenu
             tex.Apply();
             return tex;
         }
-        private void HideBlindTriggers()
-        {
-            GameObject.Find("BlindboxHeadTrigger")?.SetActive(false);
-            GameObject.Find("SightboxHeadTrigger")?.SetActive(false);
-        }
+
 
 
     }

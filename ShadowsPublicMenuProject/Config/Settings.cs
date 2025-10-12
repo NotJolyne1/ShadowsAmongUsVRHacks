@@ -20,6 +20,7 @@ namespace ShadowsPublicMenu.Config
         public static int PlayerPageNum = 0;
 
         public static int CurrentPage = 0;
+        public static int ErrorCount = 0;
 
         public static bool CodeRecievced = false;
 

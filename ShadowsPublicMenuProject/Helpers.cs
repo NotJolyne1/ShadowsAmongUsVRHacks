@@ -34,6 +34,7 @@ namespace ShadowsPublicMenu
             catch (System.Exception ex)
             {
                 MelonLogger.Error("[RoomHelper] Failed to get room code: " + ex);
+                Settings.ErrorCount += 1;
                 return "null";
             }
         }
@@ -96,5 +97,7 @@ namespace ShadowsPublicMenu
             LightBlue = 10,
             LightGreen = 11
         }
+
+
     }
 }

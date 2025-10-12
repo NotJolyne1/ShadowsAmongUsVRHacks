@@ -77,6 +77,7 @@ namespace ShadowsPublicMenu.Config
             catch (Exception e)
             {
                 MelonLogger.Warning($"[FAIL] Failed to refresh game references! Please report this to me on discord (@Shadoww.py) or github issues tab with this: Failed at: {reference} Error: {e}");
+                Settings.ErrorCount += 1;
             }
         }
 
