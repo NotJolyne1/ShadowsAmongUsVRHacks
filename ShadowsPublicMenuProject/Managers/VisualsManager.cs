@@ -4,126 +4,146 @@ using Il2CppSG.Airlock;
 using Il2CppSG.Airlock.Network;
 using ShadowsPublicMenu.Config;
 using UnityEngine;
-using static Il2CppSG.Airlock.Graphics.VulpineRenderer;
 
 namespace ShadowsPublicMenu.Managers
 {
     public static class PlayerVisualManager
     {
         private static GameObject espHolder;
-        public static Dictionary<PlayerState, GameObject[]> playerESPs = new Dictionary<PlayerState, GameObject[]>();
-
         private static GameObject lineRenderHolder;
-        public static Dictionary<PlayerState, LineRenderer> playerLines = new Dictionary<PlayerState, LineRenderer>();
 
+        public static Dictionary<PlayerState, GameObject[]> playerESPs = new Dictionary<PlayerState, GameObject[]>();
+        public static Dictionary<PlayerState, LineRenderer> playerLines = new Dictionary<PlayerState, LineRenderer>();
         private static Dictionary<PlayerState, NetworkedLocomotionPlayer> playerLocomotions = new Dictionary<PlayerState, NetworkedLocomotionPlayer>();
 
-
-        private static readonly Dictionary<GameObject, List<Renderer>> playerRenderers = new Dictionary<GameObject, List<Renderer>>();
-        private static readonly Dictionary<int, Material> playerMaterials = new Dictionary<int, Material>();
         public static void DrawVisuals()
         {
             if (GameReferences.Rig == null || GameReferences.Spawn?.PlayerStates == null)
+            {
+                CleanupAll();
                 return;
+            }
 
-            bool localAlive = GameReferences.Rig.PState.IsAlive;
-            bool localSpectator = GameReferences.Rig.PState.IsSpectating;
-            Vector3 localPos = GameReferences.Rig.transform.position;
             Camera cam = Camera.main;
             if (cam == null) return;
 
-            foreach (var state in GameReferences.Spawn.PlayerStates)
+            Vector3 localPos = GameReferences.Rig.transform.position;
+            bool localSpectator = GameReferences.Rig.PState.IsSpectating;
+
+            var currentPlayers = new HashSet<PlayerState>();
+            foreach (var ps in GameReferences.Spawn.PlayerStates)
+                if (ps != null) currentPlayers.Add(ps);
+
+            CleanupMissingPlayers(currentPlayers);
+
+            foreach (var state in currentPlayers)
             {
-                bool playerValid = state != null && state.IsSpawned && state.IsConnected && !state.IsSpectating &&
-                                   (state.NetworkName?.Value == null || !state.NetworkName.Value.Contains("Color##")) &&
-                                   state != GameReferences.Rig.PState;
-
-                bool targetAlive = state?.IsAlive ?? false;
-
-                if (!playerValid || localSpectator)
+                if (state == GameReferences.Rig.PState || !state.IsSpawned || !state.IsConnected || state.IsSpectating)
                 {
-                    if (Mods.BoxESP) RemoveESP(state);
-                    if (Mods.Tracers) RemoveTracer(state);
+                    RemoveESP(state);
+                    RemoveTracer(state);
                     continue;
                 }
 
-                if (!playerLocomotions.TryGetValue(state, out NetworkedLocomotionPlayer locoPlayer) || locoPlayer == null)
+                if (state.NetworkName?.Value != null && state.NetworkName.Value.Contains("Color##"))
+                {
+                    RemoveESP(state);
+                    RemoveTracer(state);
+                    continue;
+                }
+
+                if (!playerLocomotions.TryGetValue(state, out var loco) || loco == null)
                 {
                     GameObject playerObj = GameObject.Find($"NetworkedLocomotionPlayer ({state.PlayerId})");
                     if (playerObj == null)
                     {
-                        if (Mods.BoxESP) RemoveESP(state);
-                        if (Mods.Tracers) RemoveTracer(state);
+                        RemoveESP(state);
+                        RemoveTracer(state);
                         continue;
                     }
 
-                    locoPlayer = playerObj.GetComponent<NetworkedLocomotionPlayer>();
-                    if (locoPlayer == null)
+                    loco = playerObj.GetComponent<NetworkedLocomotionPlayer>();
+                    if (loco == null)
                     {
-                        if (Mods.BoxESP) RemoveESP(state);
-                        if (Mods.Tracers) RemoveTracer(state);
+                        RemoveESP(state);
+                        RemoveTracer(state);
                         continue;
                     }
 
-                    playerLocomotions[state] = locoPlayer;
+                    playerLocomotions[state] = loco;
                 }
+
+                Vector3 targetPos = loco.RigidbodyPosition + new Vector3(0f, 0.6f, 0f);
+                Color playerColor = Helpers.GetColorFromID(state.ColorId);
 
                 if (Mods.BoxESP)
                 {
-                    if (!playerESPs.TryGetValue(state, out GameObject[] espParts) || espParts == null)
+                    if (!playerESPs.TryGetValue(state, out var esp) || esp == null)
                     {
-                        espParts = CreateHollowESPBox();
-                        playerESPs[state] = espParts;
+                        esp = CreateHollowESPBox();
+                        playerESPs[state] = esp;
                     }
-
-                    Vector3 espPos = playerLocomotions[state].RigidbodyPosition + new Vector3(0f, 0.6f, 0f);
-                    Color espColor = Helpers.GetColorFromID(state.ColorId);
-                    UpdateHollowBox(espParts, espPos, cam, espColor);
+                    UpdateHollowBox(esp, targetPos, cam, playerColor);
                 }
+                else RemoveESP(state);
 
                 if (Mods.Tracers)
                 {
-                    if (!playerLines.TryGetValue(state, out LineRenderer line) || line == null)
+                    if (!playerLines.TryGetValue(state, out var line) || line == null)
                     {
                         line = CreateLineRenderer();
                         playerLines[state] = line;
                     }
-
-                    float lineWidth = 0.025f;
-                    line.startWidth = lineWidth;
-                    line.endWidth = lineWidth;
-                    Color lineColor = Helpers.GetColorFromID(state.ColorId);
-                    line.startColor = lineColor;
-                    line.endColor = lineColor;
-
-                    line.SetPosition(0, localPos);
-                    line.SetPosition(1, playerLocomotions[state].RigidbodyPosition);
-
-                    if (!line.gameObject.activeInHierarchy)
-                        line.gameObject.SetActive(true);
+                    UpdateTracer(line, localPos, targetPos, playerColor);
                 }
+                else RemoveTracer(state);
             }
+        }
 
-            if (Mods.BoxESP) CleanupESP();
-            if (Mods.Tracers) CleanupTracers();
+        private static void CleanupMissingPlayers(HashSet<PlayerState> currentPlayers)
+        {
+            foreach (var kvp in new Dictionary<PlayerState, GameObject[]>(playerESPs))
+                if (!currentPlayers.Contains(kvp.Key) || kvp.Key == null) RemoveESP(kvp.Key);
+
+            foreach (var kvp in new Dictionary<PlayerState, LineRenderer>(playerLines))
+                if (!currentPlayers.Contains(kvp.Key) || kvp.Key == null) RemoveTracer(kvp.Key);
+
+            foreach (var kvp in new Dictionary<PlayerState, NetworkedLocomotionPlayer>(playerLocomotions))
+                if (!currentPlayers.Contains(kvp.Key) || kvp.Key == null) playerLocomotions.Remove(kvp.Key);
+        }
+
+        private static void CleanupAll()
+        {
+            foreach (var kvp in playerESPs) DestroyESP(kvp.Value);
+            playerESPs.Clear();
+
+            foreach (var kvp in playerLines)
+                if (kvp.Value != null) Object.Destroy(kvp.Value.gameObject);
+            playerLines.Clear();
+
+            playerLocomotions.Clear();
         }
 
         private static void RemoveESP(PlayerState state)
         {
             if (state == null) return;
-            if (playerESPs.TryGetValue(state, out GameObject[] oldESP))
+            if (playerESPs.TryGetValue(state, out var oldESP))
             {
-                if (oldESP != null)
-                    foreach (var o in oldESP)
-                        if (o != null) Object.Destroy(o);
+                DestroyESP(oldESP);
                 playerESPs.Remove(state);
             }
         }
 
+        private static void DestroyESP(GameObject[] esp)
+        {
+            if (esp == null) return;
+            foreach (var o in esp)
+                if (o != null) Object.Destroy(o);
+        }
+
         private static GameObject[] CreateHollowESPBox()
         {
-            if (espHolder == null)
-                espHolder = new GameObject("ESP_Holder");
+            if (espHolder == null) espHolder = new GameObject("ESP_Holder");
 
             GameObject[] lines = new GameObject[4];
             for (int i = 0; i < 4; i++)
@@ -132,14 +152,13 @@ namespace ShadowsPublicMenu.Managers
                 Object.Destroy(line.GetComponent<Collider>());
                 line.transform.parent = espHolder.transform;
 
-                var renderer = line.GetComponent<Renderer>();
-                renderer.material = new Material(Shader.Find("GUI/Text Shader"));
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
+                var rend = line.GetComponent<Renderer>();
+                rend.material = new Material(Shader.Find("GUI/Text Shader"));
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                rend.receiveShadows = false;
 
                 lines[i] = line;
             }
-
             return lines;
         }
 
@@ -147,10 +166,7 @@ namespace ShadowsPublicMenu.Managers
         {
             if (lines == null || lines.Length < 4) return;
 
-            float width = 0.9f;
-            float height = 1.8f;
-            float thickness = 0.05f;
-
+            float width = 0.9f, height = 1.8f, thickness = 0.05f;
             Vector3 camForward = cam.transform.forward;
             camForward.y = 0;
             if (camForward.sqrMagnitude < 0.001f) camForward = Vector3.forward;
@@ -173,36 +189,16 @@ namespace ShadowsPublicMenu.Managers
             lines[3].transform.rotation = rotation;
 
             foreach (var line in lines)
-            {
                 if (line != null)
-                {
-                    var rend = line.GetComponent<Renderer>();
-                    rend.enabled = true;
-                    rend.material.color = color;
-                }
-            }
-        }
-
-        private static void CleanupESP()
-        {
-            List<PlayerState> toRemove = new List<PlayerState>();
-            foreach (var kvp in playerESPs)
-            {
-                if (kvp.Key == null || !kvp.Key.IsConnected || !kvp.Key.IsSpawned || kvp.Key.IsSpectating ||
-                    (kvp.Key.NetworkName?.Value != null && kvp.Key.NetworkName.Value.Contains("Color##")))
-                    toRemove.Add(kvp.Key);
-            }
-            foreach (var key in toRemove)
-                RemoveESP(key);
+                    line.GetComponent<Renderer>().material.color = color;
         }
 
         private static void RemoveTracer(PlayerState state)
         {
             if (state == null) return;
-            if (playerLines.TryGetValue(state, out LineRenderer oldLine))
+            if (playerLines.TryGetValue(state, out var line))
             {
-                if (oldLine != null)
-                    Object.Destroy(oldLine.gameObject);
+                if (line != null) Object.Destroy(line.gameObject);
                 playerLines.Remove(state);
             }
         }
@@ -214,32 +210,27 @@ namespace ShadowsPublicMenu.Managers
 
             GameObject lineObj = new GameObject("LineObject");
             lineObj.transform.parent = lineRenderHolder.transform;
-            LineRenderer newLine = lineObj.AddComponent<LineRenderer>();
+            LineRenderer renderer = lineObj.AddComponent<LineRenderer>();
 
-            newLine.numCapVertices = 10;
-            newLine.numCornerVertices = 5;
-            newLine.material.shader = Shader.Find("GUI/Text Shader");
-            newLine.positionCount = 2;
-            newLine.useWorldSpace = true;
-            newLine.startWidth = 0.025f;
-            newLine.endWidth = 0.025f;
+            renderer.numCapVertices = 10;
+            renderer.numCornerVertices = 5;
+            renderer.material.shader = Shader.Find("GUI/Text Shader");
+            renderer.positionCount = 2;
+            renderer.useWorldSpace = true;
+            renderer.startWidth = 0.025f;
+            renderer.endWidth = 0.025f;
 
-            return newLine;
+            return renderer;
         }
 
-        private static void CleanupTracers()
+        private static void UpdateTracer(LineRenderer line, Vector3 start, Vector3 end, Color color)
         {
-            List<PlayerState> toRemove = new List<PlayerState>();
-            foreach (var kvp in playerLines)
-            {
-                if (kvp.Key == null || !kvp.Key.IsConnected || !kvp.Key.IsSpawned || kvp.Key.IsSpectating ||
-                    (kvp.Key.NetworkName?.Value != null && kvp.Key.NetworkName.Value.Contains("Color##")))
-                    toRemove.Add(kvp.Key);
-            }
-            foreach (var key in toRemove)
-                RemoveTracer(key);
+            if (line == null) return;
+            line.SetPosition(0, start);
+            line.SetPosition(1, end);
+            line.startColor = color;
+            line.endColor = color;
+            if (!line.gameObject.activeInHierarchy) line.gameObject.SetActive(true);
         }
-
-
     }
 }
