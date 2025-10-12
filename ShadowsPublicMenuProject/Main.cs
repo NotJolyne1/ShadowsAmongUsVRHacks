@@ -48,11 +48,9 @@ namespace ShadowsPublicMenu
 
 
 
-            string purple = "\u001b[35m";
-            string reset = "\u001b[0m";
 
             MelonLogger.Msg($@"
-{purple}+----------------------------------------------------------------------+
+{"\u001b[35m"}+----------------------------------------------------------------------+
 |                                                                      |
 |                         SHADOW'S MENU                                |
 |                    Developed by Shadoww.py                           |
@@ -62,7 +60,7 @@ namespace ShadowsPublicMenu
 | Join my Discord for early access to updates and to make suggestions! |
 | https://discord.com/invite/2FzsKdvjMU                                |
 |                                                                      |
-+----------------------------------------------------------------------+{reset}
++----------------------------------------------------------------------+{"\u001b[0m"}
 ");
 
 
