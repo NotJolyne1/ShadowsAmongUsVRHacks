@@ -112,11 +112,6 @@ namespace ShadowsPublicMenu.MenuPages
                         kvp.Value.gameObject.SetActive(Mods.Tracers);
                 }
             }
-
-
-
-
-
         }
     }
 }

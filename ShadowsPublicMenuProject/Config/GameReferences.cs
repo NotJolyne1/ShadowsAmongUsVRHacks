@@ -85,8 +85,6 @@ namespace ShadowsPublicMenu.Config
         {
             AllNetorkLocomotions.Clear();
 
-            var allStates = UnityEngine.Object.FindObjectsOfType<PlayerState>();
-
             foreach (PlayerState player in Spawn.PlayerStates)
             {
                 NetworkedLocomotionPlayer locoPlayer = null;

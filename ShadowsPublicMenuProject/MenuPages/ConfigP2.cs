@@ -21,7 +21,6 @@ namespace ShadowsPublicMenu.MenuPages
             }
             y += 30f;
 
-
         }
     }
 }
