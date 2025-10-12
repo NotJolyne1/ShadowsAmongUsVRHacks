@@ -15,7 +15,7 @@ using UnityEngine.InputSystem;
 using static ShadowsPublicMenu.Config.GameReferences;
 using static ShadowsPublicMenu.Config.Settings;
 
-[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", "2.5.4", "Shadoww.py")]
+[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", "1.5.4", "Shadoww.py")]
 
 [assembly: MelonGame("Schell Games", "Among Us 3D")]
 [assembly: MelonGame("Schell Games", "Among Us VR")]

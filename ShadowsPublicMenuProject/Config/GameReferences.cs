@@ -69,7 +69,6 @@ namespace ShadowsPublicMenu.Config
                 Runner = UnityEngine.Object.FindObjectOfType<AirlockNetworkRunner>();
 
                 reference = "Customization Manager";
-                Customization = UnityEngine.Object.FindObjectOfType<CustomizationManager>();
 
                 Settings.GameRefsFound = true;
                 MelonLogger.Msg("Found Game References!");
