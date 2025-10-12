@@ -50,9 +50,16 @@ And please don't steal my code for your own menu public menu, if you want someth
 - No Kill Cooldown
 - Hollow Box ESP
 - Tracers
-- Xray
 
 - Give Imposter (H)
 - Give Vigilante (H)
 - Give Crewmate (H)
 - Kill Player (H)
+- Teleport To Player
+
+
+
+
+# Known bugs
+- ESP Mods lagging on VR
+- ESP Mods not showing on host migration
