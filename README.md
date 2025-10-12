@@ -5,6 +5,8 @@ The best public Among Us 3D / Among Us VR mod menu, this menu is safe and open s
 
 This menu works for Among Us 3D & Among Us 3D: VR on Steam only, not standalone, PC only
 
+# FOR EDUCATIONAL PURPOSES ONLY
+
 # Join my Discord for early access to updates, to report issues, to suggest mods, for help, or just to talk / find other people to mod with.
 # https://discord.gg/2FzsKdvjMU
 
@@ -31,12 +33,6 @@ As of now, the menu is undetected and will not get you banned as long as you don
 
 # Is this a virus?
 No, the menu is open sourced so you may go through and check the files.
-
-
-# Please, be on the good side of modding
-I created this menu to allow others to mod the game for fun, never to ruin it or harass players.
-Please don't abuse the mods or hurt/harass players or to ruin the game. Thank you
-And please don't steal my code for your own menu public menu, if you want something for a private menu just ask.
 
 
 # What does this menu have?
