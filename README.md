@@ -51,6 +51,7 @@ No, the menu is open sourced so you may go through and check the files.
 - Give Vigilante (H)
 - Give Crewmate (H)
 - Kill Player (H)
+- Spaz Players Color (H)
 - Teleport To Player
 
 
