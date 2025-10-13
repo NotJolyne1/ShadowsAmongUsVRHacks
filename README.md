@@ -28,7 +28,7 @@ If something does not work, go to your console and copy the error(s) and send th
 
 
 # Will I get banned?
-As of now, the menu is undetected and will not get you banned as long as you don't contribute to the abusive modders, it will stay like this.
+As of now, the menu is undetected and will not get you banned as long as you don't abuse these mods to hurt the game and the players, it will stay like this.
 
 
 # Is this a virus?
