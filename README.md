@@ -41,20 +41,25 @@ No, the menu is open sourced so you may go through and check the files.
 - Start Game (H)
 - No Game End (H)
 - Kill Everyone (H)
+- Lights Sabotage
+- Reactor Sabotage
+- Oxygen Sabotage
 - Noclip
 - Speed
 - No Kill Cooldown
 - Hollow Box ESP
 - Tracers
+- Fullbright
 
 - Give Imposter (H)
+- Give Wraith (H)
 - Give Vigilante (H)
 - Give Crewmate (H)
 - Kill Player (H)
 - Spaz Players Color (H)
 - Teleport To Player
 
-
+- Version Checker
 
 
 # Known bugs
