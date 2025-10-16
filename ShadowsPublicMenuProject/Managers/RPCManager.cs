@@ -2,8 +2,11 @@
 using Il2CppSG.Airlock;
 using Il2CppSG.Airlock.Graphics;
 using Il2CppSG.Airlock.Roles;
+using Il2CppSG.Airlock.Sabotage;
+using MelonLoader;
 using ShadowsPublicMenu.Config;
-using static UnityEngine.GraphicsBuffer;
+using System.Collections;
+using UnityEngine;
 
 namespace ShadowsPublicMenu.Managers
 {
@@ -49,7 +52,30 @@ namespace ShadowsPublicMenu.Managers
             }
         }
 
+        public static void RPC_BeginSabotage(Sabotage.SabotageType sabotage)
+        {
+            if (GameReferences.sabotage != null && Settings.IsHost && !Settings.SabotageActive)
+            {
+                GameReferences.sabotage.RPC_SendSabotageToAll((int)sabotage, -1);
+                Settings.SabotageActive = true;
+                MelonCoroutines.Start(WaitSabotage());
+            }
+        }
 
+        public static void RPC_EndSabotage()
+        {
+            if (GameReferences.sabotage != null)
+            {
+                GameReferences.sabotage.RPC_EndSabotage(true);
+                Settings.SabotageActive = false;
+            }
+        }
 
+        private static IEnumerator WaitSabotage()
+        {
+            Settings.SabotageActive = true;
+            yield return new WaitForSeconds(4f);
+            Settings.SabotageActive = false;
+        }
     }
 }

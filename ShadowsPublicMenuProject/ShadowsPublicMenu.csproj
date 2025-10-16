@@ -32,6 +32,9 @@
 	  <Reference Include="0Harmony">
 	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\net6\0Harmony.dll</HintPath>
 	  </Reference>
+	  <Reference Include="Il2Cppcom.rlabrecque.steamworks.net">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\Il2CppAssemblies\Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
+	  </Reference>
 	  <Reference Include="Il2CppFusion.Runtime">
 	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\Il2CppAssemblies\Il2CppFusion.Runtime.dll</HintPath>
 	  </Reference>
@@ -76,6 +79,9 @@
 	  </Reference>
 	  <Reference Include="UnityEngine.UI">
 	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.UIModule">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.XRModule">
 	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Among Us 3D\MelonLoader\Il2CppAssemblies\UnityEngine.XRModule.dll</HintPath>

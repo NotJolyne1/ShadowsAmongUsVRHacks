@@ -5,6 +5,7 @@ using Il2Cpp;
 using Il2CppSG.Airlock;
 using Il2CppSG.Airlock.Customization;
 using Il2CppSG.Airlock.Network;
+using Il2CppSG.Airlock.Sabotage;
 using Il2CppSG.Airlock.Util;
 using Il2CppSG.Airlock.XR;
 using MelonLoader;
@@ -25,6 +26,8 @@ namespace ShadowsPublicMenu.Config
         public static AirlockNetworkRunner Runner;
         public static PlayerVisual Visual;
         public static CustomizationManager Customization;
+        public static LightsSabotage Lights;
+        public static SabotageManager sabotage;
 
 
         public static void refreshGameRefs()
@@ -42,6 +45,8 @@ namespace ShadowsPublicMenu.Config
                 Runner = null;
                 Visual = null;
                 Customization = null;
+                Lights = null;
+                sabotage = null;
 
 
                 reference = "Spawn Manager";
@@ -69,6 +74,13 @@ namespace ShadowsPublicMenu.Config
                 Runner = UnityEngine.Object.FindObjectOfType<AirlockNetworkRunner>();
 
                 reference = "Customization Manager";
+                Customization = UnityEngine.Object.FindObjectOfType<CustomizationManager>();
+
+                reference = "Lights Sabotage";
+                Lights = UnityEngine.Object.FindObjectOfType<LightsSabotage>();
+
+                reference = "SabotageManager";
+                sabotage = UnityEngine.Object.FindObjectOfType<SabotageManager>();
 
                 Settings.GameRefsFound = true;
                 MelonLogger.Msg("Found Game References!");

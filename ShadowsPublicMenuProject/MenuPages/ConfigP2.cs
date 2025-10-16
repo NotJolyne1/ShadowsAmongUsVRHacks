@@ -21,6 +21,16 @@ namespace ShadowsPublicMenu.MenuPages
             }
             y += 30f;
 
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Menu Theme: {Helpers.GetColorName(Settings.GUIColorInt)}"))
+            {
+                if (Settings.GUIColorInt < 8)
+                    Settings.GUIColorInt++;
+                else
+                    Settings.GUIColorInt = 0;
+
+                Main.SetMenuTheme();
+            }
+            y += 30f;
         }
     }
 }

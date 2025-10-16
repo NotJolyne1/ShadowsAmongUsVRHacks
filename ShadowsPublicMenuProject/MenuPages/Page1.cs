@@ -1,11 +1,14 @@
 ﻿using Il2CppFusion;
 using Il2CppSG.Airlock;
+using Il2CppSG.Airlock.Sabotage;
 using Il2CppSG.Airlock.UI.TitleScreen;
 using Il2CppSG.Airlock.Util;
+using Il2CppSystem.Threading;
 using MelonLoader;
 using ShadowsPublicMenu.Config;
 using ShadowsPublicMenu.Managers;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ShadowsPublicMenu.MenuPages
 {
@@ -54,7 +57,7 @@ namespace ShadowsPublicMenu.MenuPages
             }
             y += 30f;
 
-            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Spaz All Colors: {Mods.spazAllColors}"))
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Spaz All Colors (H): {Mods.spazAllColors}"))
             {
                 Mods.spazAllColors = !Mods.spazAllColors;
 
@@ -66,6 +69,31 @@ namespace ShadowsPublicMenu.MenuPages
                             MelonCoroutines.Start(ModManager.SpazColors(player));
                     }
                 }
+            }
+
+            y += 30f;
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Sabotage Lights (H)"))
+            {
+                RPCManager.RPC_BeginSabotage(Sabotage.SabotageType.Lights);
+            }
+
+            y += 30f;
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Sabotage Oxygen (H)"))
+            {
+                RPCManager.RPC_BeginSabotage(Sabotage.SabotageType.Oxygen);
+            }
+
+            y += 30f;
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Sabotage Reactor (H)"))
+            {
+                RPCManager.RPC_BeginSabotage(Sabotage.SabotageType.Reactor);
+            }
+            y += 30f;
+
+
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"End Sabotage"))
+            {
+                RPCManager.RPC_EndSabotage();
             }
             y += 30f;
 
@@ -90,7 +118,6 @@ namespace ShadowsPublicMenu.MenuPages
             if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Hollow Box ESP: {Mods.BoxESP}"))
             {
                 Mods.BoxESP = !Mods.BoxESP;
-
                 foreach (var kvp in PlayerVisualManager.playerESPs)
                 {
                     if (kvp.Value != null)
@@ -112,6 +139,14 @@ namespace ShadowsPublicMenu.MenuPages
                         kvp.Value.gameObject.SetActive(Mods.Tracers);
                 }
             }
+            y += 30f;
+
+            if (GUI.Button(new Rect(20f, y, 160f, 30f), $"Fullbright: {Mods.Fullbright}"))
+            {
+                Mods.Fullbright = !Mods.Fullbright;
+            }
+
+
         }
     }
 }

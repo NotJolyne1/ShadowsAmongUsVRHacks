@@ -9,8 +9,10 @@
         public static bool NoKillCooldown;
         public static bool Tracers;
         public static bool BoxESP;
+        public static bool BodyTracers;
         public static bool spazColors;
         public static bool spazAllColors;
-
+        public static bool Fullbright;
+        public static bool DeathLogger;
     }
 }

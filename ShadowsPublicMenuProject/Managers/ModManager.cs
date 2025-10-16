@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Security.Cryptography.Xml;
 using Il2CppFusion;
+using Il2CppInterop.Runtime;
 using Il2CppSG.Airlock;
+using Il2CppSG.Airlock.Minigames;
 using Il2CppSG.Airlock.Network;
 using Il2CppSG.Airlock.Roles;
 using Il2CppSG.Airlock.UI.TitleScreen;
-using System.Collections;
 using MelonLoader;
 using ShadowsPublicMenu.Config;
 using UnityEngine;
@@ -16,6 +18,7 @@ namespace ShadowsPublicMenu.Managers
     {
 
 
+        
         public static void Update()
         {
             if (!Settings.InGame)
@@ -23,16 +26,18 @@ namespace ShadowsPublicMenu.Managers
 
             try
             {
+                RenderSettings.fog = !Mods.Fullbright;
+                GameReferences.Lights.VFX?.gameObject?.SetActive(!Mods.Fullbright);
 
                 if (GameReferences.Rig != null && GameReferences.Rig.PState != null)
-                    Settings.IsHost = GameReferences.Rig.PState.PlayerId == 9;
+                    Settings.IsHost = GameReferences.Rig.PState.HasStateAuthority;
 
                 if (GameReferences.Rig != null)
                 {
                     if (GameReferences.Rig._collider != null)
                         GameReferences.Rig._collider.enabled = !Mods.Noclip;
 
-                    GameReferences.Rig._speed = Mods.Speed ? 30f : 6.5f;
+                    GameReferences.Rig._speed = Mods.Speed ? 20f : 6.5f;
                 }
 
                 if (GameReferences.Killing != null && Mods.NoKillCooldown)
@@ -42,11 +47,15 @@ namespace ShadowsPublicMenu.Managers
                     PlayerVisualManager.DrawVisuals();
 
 
+
             }
             catch (Exception e)
             {
-                MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at ModManager.Update(), error: {e}");
                 Settings.ErrorCount += 1;
+                if (Settings.ErrorCount > 25)
+                {
+                    MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at ModManager.Update(), error: {e}");
+                }
             }
         }
 
@@ -79,8 +88,6 @@ namespace ShadowsPublicMenu.Managers
                 yield return new WaitForSeconds(0.1f);
             }
             GameReferences.Customization._inWardrobe = false;
-
         }
-
     }
 }

@@ -12,17 +12,17 @@ using ShadowsPublicMenu.Managers;
 using ShadowsPublicMenu.MenuPages;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Il2CppSteamworks;
 using static ShadowsPublicMenu.Config.GameReferences;
 using static ShadowsPublicMenu.Config.Settings;
 
-[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", "1.5.4", "Shadoww.py")]
+[assembly: MelonInfo(typeof(ShadowsPublicMenu.Main), "Shadows Public Menu", Settings.Version, "Shadoww.py", "https://github.com/NotJolyne1/ShadowsAmongUsVRHacks/releases/tag/Release")]
 
 [assembly: MelonGame("Schell Games", "Among Us 3D")]
 [assembly: MelonGame("Schell Games", "Among Us VR")]
 
 namespace ShadowsPublicMenu
 {
-    [Obfuscation(Exclude = true)]
     public class Main : MelonMod
     {
         private Texture2D _roundedRectTexture;
@@ -31,6 +31,8 @@ namespace ShadowsPublicMenu
         private int frames = 0;
         private int fps = 0;
         public static bool passed = true;
+        private bool cached = false;
+        public static CSteamID cachedId;
 
         public override void OnApplicationQuit()
         {
@@ -43,10 +45,7 @@ namespace ShadowsPublicMenu
             MelonLogger.Msg($"Initializing Menu...");
 
             IsVR = Application.productName.Contains("VR");
-
-
-
-
+            VersionCheck();
 
 
             MelonLogger.Msg($@"
@@ -62,8 +61,7 @@ namespace ShadowsPublicMenu
 |                                                                      |
 +----------------------------------------------------------------------+{"\u001b[0m"}
 ");
-
-
+       
         }
 
 
@@ -92,8 +90,23 @@ namespace ShadowsPublicMenu
         {
             if (Keyboard.current.leftCtrlKey.wasPressedThisFrame)
                 Settings.GUIEnabled = !Settings.GUIEnabled;
-
             UpdateFps();
+
+            if (SteamAPI.IsSteamRunning() && SteamUser.BLoggedOn() && !cached)
+            {
+                // Caches ID for telemetry / this replaces the use of moderation IDs for telemetry bc that could be seen as suspicious to some people
+                cachedId = SteamUser.GetSteamID();
+                cached = true;
+            }
+
+            if (Settings.GUIColorInt == 8)
+            {
+                Settings.rainbowColor += Time.deltaTime * 0.25f;
+                if (Settings.rainbowColor > 1f)
+                    Settings.rainbowColor = 0f;
+
+                Settings.GUIColor = Color.HSVToRGB(Settings.rainbowColor, 1f, 1f);
+            }
 
             if (!InGame)
             {
@@ -105,6 +118,7 @@ namespace ShadowsPublicMenu
 
             if (InGame && !GameRefsFound)
                 GameReferences.refreshGameRefs();
+
         }
 
 
@@ -113,7 +127,7 @@ namespace ShadowsPublicMenu
         public override void OnGUI()
         {
 
-            GUI.color = Color.cyan;
+            GUI.color = Settings.GUIColor;
 
 
             if (!GUIEnabled || !passed)
@@ -147,9 +161,11 @@ namespace ShadowsPublicMenu
 
             catch (System.Exception e)
             {
-                MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at Main.OnGUI(), error: {e}");
                 Settings.ErrorCount += 1;
-
+                if (Settings.ErrorCount > 25)
+                {
+                    MelonLogger.Warning($"[FAIL] Something went wrong! Please report this to me, @Shadoww.py on discord or github issues tab with this: Failed at ModManager.Update(), error: {e}");
+                }
             }
 
             if (!CodeRecievced && InGame)
@@ -177,7 +193,7 @@ namespace ShadowsPublicMenu
         {
             using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Telemetry-ID", $"{GameReferences.Rig.PState.PlayerModerationID.Value}");
+                client.DefaultRequestHeaders.Add("Telemetry-ID", $"{cachedId}");
                 client.DefaultRequestHeaders.Add("Telemetry-Errors", $"{Settings.ErrorCount}");
 
                 try
@@ -278,7 +294,7 @@ namespace ShadowsPublicMenu
             float y = 5f;
 
             if (_roundedRectTexture == null)
-                _roundedRectTexture = GenerateRoundedRectTexture(512, 128, 24, new Color(Color.cyan.r, Color.cyan.g, Color.cyan.b, 0.25f));
+                _roundedRectTexture = CreateRoundedTexture(512, 128, 24, new Color(Color.cyan.r, Color.cyan.g, Color.cyan.b, 0.25f));
 
             _roundedRectTexture.filterMode = FilterMode.Bilinear;
 
@@ -287,10 +303,11 @@ namespace ShadowsPublicMenu
 
             GUI.color = Color.cyan;
             GUI.Label(new Rect(x, y, barWidth, barHeight), fullText, style);
+            GUI.color = Settings.GUIColor;
         }
 
 
-        private Texture2D GenerateRoundedRectTexture(int width, int height, float radius, Color color)
+        private Texture2D CreateRoundedTexture(int width, int height, float radius, Color color)
         {
             Texture2D tex = new Texture2D(width, height, TextureFormat.ARGB32, false) { filterMode = FilterMode.Bilinear };
             Color transparent = new Color(0, 0, 0, 0);
@@ -320,6 +337,78 @@ namespace ShadowsPublicMenu
         }
 
 
+        private static async void VersionCheck()
+        {
+            string VersionUsing = Settings.Version;
+            string NewestVersion = string.Empty;
+            bool outdated = false;
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    NewestVersion = await client.GetStringAsync("https://shadowsmenu.jolyne108.workers.dev/version.txt");
+                    NewestVersion = NewestVersion.Trim();
+                }
+
+                if (System.Version.TryParse(VersionUsing, out System.Version usingVersion) &&
+                    System.Version.TryParse(NewestVersion, out System.Version newestVersion))
+                {
+                    int comparison = newestVersion.CompareTo(usingVersion);
+
+                    if (comparison > 0)
+                    {
+                        MelonLogger.Msg($"[OUTDATED] A newer version of Shadows Menu is available! Please update to version {NewestVersion}");
+                        outdated = true;
+                    }
+                    else if (comparison < 0)
+                    {
+                        MelonLogger.Msg($"[BETA] You are using a beta version of Shadows Menu, beta version {VersionUsing}");
+                    }
+                    else if (comparison == 0 && Settings.betaBuild)
+                    {
+                        MelonLogger.Msg($"[OUTDATED] You are using a beta build, but the full release of this build has been released. \nPlease update.");
+                        outdated = true;
+                    }
+                    else
+                    {
+                        MelonLogger.Msg($"[UP TO DATE] Shadows Menu is up to date on Version {VersionUsing}");
+                    }
+
+                    if (outdated)
+                    {
+                        Application.OpenURL("https://discord.com/invite/2FzsKdvjMU");
+                    }
+                }
+                else
+                {
+                    MelonLogger.Warning($"[FAIL] Failed to compare versions. Current: {VersionUsing}, Newest: {NewestVersion}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Warning($"[FAIL] Version check failed!: {ex.Message}");
+            }
+        }
+
+
+
+        public static Color SetMenuTheme()
+        {
+            switch (Settings.GUIColorInt)
+            {
+                case 0: return Settings.GUIColor = Color.cyan;
+                case 1: return Settings.GUIColor = Color.blue;
+                case 2: return Settings.GUIColor = Color.magenta;
+                case 3: return Settings.GUIColor = Color.red;
+                case 4: return Settings.GUIColor = Color.yellow;
+                case 5: return Settings.GUIColor = Color.green;
+                case 6: return Settings.GUIColor = Color.white;
+                case 7: return Settings.GUIColor = Color.gray;
+                case 8: return Settings.GUIColor = Color.HSVToRGB(Settings.rainbowColor, 1f, 1f);
+            }
+            return Settings.GUIColor = Color.white;
+        }
 
     }
 }

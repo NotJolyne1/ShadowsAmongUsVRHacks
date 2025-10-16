@@ -11,7 +11,7 @@ namespace ShadowsPublicMenu.MenuPages
 {
     public class PlayerPage1
     {
-        public static void Display([Optional] PlayerState target)
+        public static void Display(PlayerState target)
         {
             float y = 50f;
             bool canWork = Settings.InGame && target != null;
@@ -32,6 +32,10 @@ namespace ShadowsPublicMenu.MenuPages
                 RPCManager.RPC_ForceRole(target, GameRole.Crewmember);
             y += 30f;
 
+            if (GUI.Button(new Rect(180f, y, 160f, 30f), "Force Wraith (H)") && canWork)
+                RPCManager.RPC_ForceRole(target, GameRole.Revenger);
+            y += 30f;
+
             if (GUI.Button(new Rect(180f, y, 160f, 30f), $"Spaz Colors (H): {Mods.spazColors}") && canWork)
             {
                 Mods.spazColors = !Mods.spazColors;
@@ -41,20 +45,9 @@ namespace ShadowsPublicMenu.MenuPages
 
             if (GUI.Button(new Rect(180f, y, 160f, 30f), "Teleport To Player") && canWork)
             {
-                if (!GameReferences.AllNetorkLocomotions.TryGetValue(target, out NetworkedLocomotionPlayer locoPlayer) || locoPlayer == null)
-                {
-                    GameReferences.RefreshLocomotions();
-
-                    if (!GameReferences.AllNetorkLocomotions.TryGetValue(target, out locoPlayer) || locoPlayer == null)
-                        return;
-                }
-
-                GameReferences.Rig.Transform.rotation = locoPlayer.RigidbodyRotation;
-                GameReferences.Rig.Transform.position = locoPlayer.RigidbodyPosition;
+                var loco = target?.LocomotionPlayer;
+                GameReferences.Rig.Teleport(loco.RigidbodyPosition, loco.RigidbodyRotation, true, true, false);
             }
-            y += 30f;
-
-
         }
     }
 }

@@ -61,6 +61,22 @@ namespace ShadowsPublicMenu
             }
         }
 
+        public static string GetColorName(int colorIndex)
+        {
+            return colorIndex switch
+            {
+                0 => "Cyan",
+                1 => "Blue",
+                2 => "Magenta",
+                3 => "Red",
+                4 => "Yellow",
+                5 => "Green",
+                6 => "White",
+                7 => "Gray",
+                8 => "RGB",
+                _ => "Unknown"
+            };
+        }
 
 
         public static PlayerRef GetPlayerRefFromID(int ID)
