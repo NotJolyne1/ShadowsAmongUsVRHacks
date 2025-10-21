@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Security.Cryptography.Xml;
 using Il2CppFusion;
@@ -30,7 +30,7 @@ namespace ShadowsPublicMenu.Managers
                 GameReferences.Lights.VFX?.gameObject?.SetActive(!Mods.Fullbright);
 
                 if (GameReferences.Rig != null && GameReferences.Rig.PState != null)
-                    Settings.IsHost = GameReferences.Rig.PState.HasStateAuthority;
+                    Settings.IsHost = GameReferences.Rig.PState.PlayerId == 9;
 
                 if (GameReferences.Rig != null)
                 {
